@@ -5,3 +5,8 @@ provider "google" {
 
   credentials = file("credentials.json")
 }
+
+provider "google-beta" {
+  // same
+  credentials = file("credentials.json")
+}
