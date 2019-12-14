@@ -28,6 +28,17 @@ resource "google_container_cluster" "primary" {
 
   project = var.project
 
+  ip_allocation_policy {
+  }
+
+  private_cluster_config {
+    // don't expose cluster nodes to Interner
+    enable_private_nodes = true
+
+    enable_private_endpoint = false
+    master_ipv4_cidr_block  = var.master_ipv4_cidr
+  }
+
   // Here we use gcloud to gather authentication information about our new cluster and write that
   // information to kubectls config file
   provisioner "local-exec" {
