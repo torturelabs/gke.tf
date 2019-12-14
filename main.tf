@@ -32,12 +32,18 @@ resource "google_container_cluster" "primary" {
   }
 
   private_cluster_config {
-    // don't expose cluster nodes to Interner
+    // don't expose cluster nodes to Internet
+    // use Cloud NAT or proxy host to get access to outside
     enable_private_nodes = true
 
     enable_private_endpoint = false
     master_ipv4_cidr_block  = var.master_ipv4_cidr
   }
+
+  // disable built-in logging and monitoring
+  // will set up our own
+  logging_service = "none"
+  monitoring_service = "none"
 
   // Here we use gcloud to gather authentication information about our new cluster and write that
   // information to kubectls config file
