@@ -1,3 +1,7 @@
+variable "bucket" {
+  type = string
+}
+
 variable "zone" {
   description = "The zone in which to create the Kubernetes cluster. Must match the region"
   type        = string

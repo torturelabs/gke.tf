@@ -35,6 +35,29 @@ resource "google_container_cluster" "primary" {
   }
 }
 
+// Separate node pool for persistent workloads
+resource "google_container_node_pool" "primary_persistent_nodes" {
+  name       = "persistent-pool"
+  location   = var.zone
+  cluster    = google_container_cluster.primary.name
+  node_count = 1
+  project    = var.project
+
+  node_config {
+    machine_type = "n1-standard-1"
+
+    oauth_scopes = [
+      "https://www.googleapis.com/auth/logging.write",
+      "https://www.googleapis.com/auth/monitoring",
+    ]
+  }
+
+  autoscaling {
+    min_node_count = 1
+    max_node_count = 3
+  }
+}
+
 // Separate node pool for preemtible workloads
 resource "google_container_node_pool" "primary_preemtible_nodes" {
   name       = "preemtible-pool"
