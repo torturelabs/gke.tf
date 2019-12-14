@@ -46,6 +46,18 @@ resource "google_container_cluster" "primary" {
   }
 }
 
+variable "node_scopes" {
+  type = list
+  default = [
+      "https://www.googleapis.com/auth/logging.write",
+      "https://www.googleapis.com/auth/monitoring",
+      // the nodes in the cluster can acquire the permission to pull the image
+      // from GCR
+      "https://www.googleapis.com/auth/cloud-platform",
+      "https://www.googleapis.com/auth/devstorage.read_write",
+    ]
+}
+
 // Separate node pool for persistent workloads
 resource "google_container_node_pool" "primary_persistent_nodes" {
   name       = "persistent-pool"
@@ -56,11 +68,7 @@ resource "google_container_node_pool" "primary_persistent_nodes" {
 
   node_config {
     machine_type = "n1-standard-1"
-
-    oauth_scopes = [
-      "https://www.googleapis.com/auth/logging.write",
-      "https://www.googleapis.com/auth/monitoring",
-    ]
+    oauth_scopes = var.node_scopes
   }
 
   autoscaling {
@@ -80,11 +88,7 @@ resource "google_container_node_pool" "primary_preemtible_nodes" {
   node_config {
     preemptible  = true
     machine_type = "n1-standard-1"
-
-    oauth_scopes = [
-      "https://www.googleapis.com/auth/logging.write",
-      "https://www.googleapis.com/auth/monitoring",
-    ]
+    oauth_scopes = var.node_scopes
   }
 
   autoscaling {

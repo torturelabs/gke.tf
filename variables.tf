@@ -1,4 +1,5 @@
 variable "bucket" {
+  description = "Bucket for storing Terraform state file"
   type = string
 }
 
@@ -10,4 +11,9 @@ variable "zone" {
 variable "project" {
   description = "the project for this network"
   type        = string
+}
+
+variable "master_ipv4_cidr" {
+  description = "IP range for cluster masters"
+  type = string
 }
