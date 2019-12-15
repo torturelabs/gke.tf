@@ -42,7 +42,7 @@ resource "google_container_cluster" "primary" {
 
   // disable built-in logging and monitoring
   // will set up our own
-  logging_service = "none"
+  logging_service    = "none"
   monitoring_service = "none"
 
   // Here we use gcloud to gather authentication information about our new cluster and write that
@@ -53,24 +53,27 @@ resource "google_container_cluster" "primary" {
 }
 
 variable "node_scopes" {
-  type = list
+  type        = list
+  description = "Access scopes"
   default = [
-      "https://www.googleapis.com/auth/logging.write",
-      "https://www.googleapis.com/auth/monitoring",
-      // the nodes in the cluster can acquire the permission to pull the image
-      // from GCR
-      "https://www.googleapis.com/auth/cloud-platform",
-      "https://www.googleapis.com/auth/devstorage.read_write",
-    ]
+    // Stackdriver Logging API, Write Only
+    "https://www.googleapis.com/auth/logging.write",
+    // Stackdriver Monitoring API, Full
+    "https://www.googleapis.com/auth/monitoring",
+    // Storage, Read Write
+    // Needed for images access for GCR
+    "https://www.googleapis.com/auth/cloud-platform",
+    "https://www.googleapis.com/auth/devstorage.read_write",
+  ]
 }
 
 // Separate node pool for persistent workloads
 resource "google_container_node_pool" "primary_persistent_nodes" {
-  name       = "persistent-pool"
-  location   = var.zone
-  cluster    = google_container_cluster.primary.name
+  name     = "persistent-pool"
+  location = var.zone
   node_count = 1
-  project    = var.project
+  cluster  = google_container_cluster.primary.name
+  project  = var.project
 
   node_config {
     machine_type = "n1-standard-1"
@@ -78,7 +81,7 @@ resource "google_container_node_pool" "primary_persistent_nodes" {
   }
 
   autoscaling {
-    min_node_count = 1
+    min_node_count = 0
     max_node_count = 3
   }
 }
@@ -88,11 +91,25 @@ resource "google_container_node_pool" "primary_preemtible_nodes" {
   name       = "preemtible-pool"
   location   = var.zone
   cluster    = google_container_cluster.primary.name
-  node_count = 1
   project    = var.project
 
   node_config {
-    preemptible  = true
+    preemptible = true
+
+    labels = {
+      preemptible = "true"
+      dedicated   = "preemptible-worker-pool"
+    }
+
+    // by default don't run workloads on that node type
+    taint = [
+      {
+        key    = "dedicated"
+        value  = "preemptible-worker-pool"
+        effect = "NO_SCHEDULE"
+      }
+    ]
+
     machine_type = "n1-standard-1"
     oauth_scopes = var.node_scopes
   }
