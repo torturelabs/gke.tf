@@ -1,8 +1,3 @@
-variable "bucket" {
-  description = "Bucket for storing Terraform state file"
-  type = string
-}
-
 variable "zone" {
   description = "The zone in which to create the Kubernetes cluster. Must match the region"
   type        = string
