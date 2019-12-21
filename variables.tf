@@ -12,3 +12,9 @@ variable "master_ipv4_cidr" {
   description = "IP range for cluster masters"
   type = string
 }
+
+variable "instance_type" {
+  description = "Type for node instances to use (both persistent and preemtible)"
+  type = string
+  default = "n1-standard-1"
+}

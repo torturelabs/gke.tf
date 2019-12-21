@@ -76,7 +76,7 @@ resource "google_container_node_pool" "primary_persistent_nodes" {
   project  = var.project
 
   node_config {
-    machine_type = "n1-standard-1"
+    machine_type = var.instance_type
     oauth_scopes = var.node_scopes
   }
 
@@ -110,7 +110,7 @@ resource "google_container_node_pool" "primary_preemtible_nodes" {
       }
     ]
 
-    machine_type = "n1-standard-1"
+    machine_type = var.instance_type
     oauth_scopes = var.node_scopes
   }
 
