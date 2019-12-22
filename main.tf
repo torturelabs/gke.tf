@@ -5,6 +5,12 @@ data "google_container_engine_versions" "on-prem" {
   project  = var.project
 }
 
+resource "random_password" "password" {
+  length           = 16
+  special          = true
+  override_special = "_%@"
+}
+
 // https://www.terraform.io/docs/providers/google/d/google_container_cluster.html
 // Create the primary cluster for this project.
 
@@ -48,7 +54,20 @@ resource "google_container_cluster" "primary" {
   // Here we use gcloud to gather authentication information about our new cluster and write that
   // information to kubectls config file
   provisioner "local-exec" {
-    command = "gcloud container clusters get-credentials ${google_container_cluster.primary.name} --zone ${google_container_cluster.primary.location} --project ${var.project}"
+    command = <<EOF
+      set -e
+      gcloud container clusters get-credentials ${google_container_cluster.primary.name} \
+        --zone ${google_container_cluster.primary.location} --project ${var.project} &&
+      kubectl create clusterrolebinding creator-cluster-admin \
+        -clusterrole cluster-admin --user $(gcloud config get-value account) \
+        --username admin --password ${random_password.password}
+EOF
+  }
+
+  // Deal with basic GKE rights to be cluster admin in k8s
+  master_auth {
+    username = "admin"
+    password = random_password.password.result
   }
 }
 
@@ -69,11 +88,11 @@ variable "node_scopes" {
 
 // Separate node pool for persistent workloads
 resource "google_container_node_pool" "primary_persistent_nodes" {
-  name     = "persistent-pool"
-  location = var.zone
+  name       = "persistent-pool"
+  location   = var.zone
   node_count = 1
-  cluster  = google_container_cluster.primary.name
-  project  = var.project
+  cluster    = google_container_cluster.primary.name
+  project    = var.project
 
   node_config {
     machine_type = var.instance_type
@@ -88,10 +107,10 @@ resource "google_container_node_pool" "primary_persistent_nodes" {
 
 // Separate node pool for preemtible workloads
 resource "google_container_node_pool" "primary_preemtible_nodes" {
-  name       = "preemtible-pool"
-  location   = var.zone
-  cluster    = google_container_cluster.primary.name
-  project    = var.project
+  name     = "preemtible-pool"
+  location = var.zone
+  cluster  = google_container_cluster.primary.name
+  project  = var.project
 
   node_config {
     preemptible = true
