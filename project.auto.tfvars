@@ -1,6 +1,6 @@
 master_ipv4_cidr = "10.178.0.0/28"
 
-project = "playtech"
+project = "playtech-gcp-taiwan-staging"
 
 zone = "europe-north1"
 
