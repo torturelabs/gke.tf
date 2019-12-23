@@ -59,8 +59,8 @@ resource "google_container_cluster" "primary" {
       gcloud container clusters get-credentials ${google_container_cluster.primary.name} \
         --zone ${google_container_cluster.primary.location} --project ${var.project} &&
       kubectl create clusterrolebinding creator-cluster-admin \
-        -clusterrole cluster-admin --user $(gcloud config get-value account) \
-        --username admin --password ${random_password.password}
+        --clusterrole cluster-admin --user $(gcloud config get-value account) \
+        --username admin --password ${random_password.password.result}
 EOF
   }
 
