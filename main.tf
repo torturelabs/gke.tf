@@ -54,13 +54,17 @@ resource "google_container_cluster" "primary" {
   // Here we use gcloud to gather authentication information about our new cluster and write that
   // information to kubectls config file
   provisioner "local-exec" {
+    environment = {
+      GKEPWD = random_password.password.result
+    }
+
     command = <<EOF
       set -e
       gcloud container clusters get-credentials ${google_container_cluster.primary.name} \
         --zone ${google_container_cluster.primary.location} --project ${var.project} &&
       kubectl create clusterrolebinding creator-cluster-admin \
         --clusterrole cluster-admin --user $(gcloud config get-value account) \
-        --username admin --password ${random_password.password.result}
+        --username admin --password $GKEPWD
 EOF
   }
 
