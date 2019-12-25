@@ -87,6 +87,8 @@ variable "node_scopes" {
     // Needed for images access for GCR
     "https://www.googleapis.com/auth/cloud-platform",
     "https://www.googleapis.com/auth/devstorage.read_write",
+    // Cloud DNS, Read Write
+    "https://www.googleapis.com/auth/ndev.clouddns.readwrite",
   ]
 }
 
